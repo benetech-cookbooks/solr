@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <!--
+        Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the
+        NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF
+        licenses this file to You under the Apache License, Version 2.0 (the "License"); you may not use this file
+        except in compliance with the License. You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+        either express or implied. See the License for the specific language governing permissions and limitations under
+        the License.
+    -->
+
+    <!--
+        This is the Solr schema file. This file should be named "schema.xml" and should be in the conf directory under
+        the solr home (i.e. ./solr/conf/schema.xml by default) or located where the classloader for the Solr webapp can
+        find it. This example schema is the recommended starting point for users. It should be kept correct and concise,
+        usable out-of-the-box. For more information, on how to customize this file, please see
+        http://wiki.apache.org/solr/SchemaXml
+    -->
+
+<schema name="bookshare_solr" version="1.2">
+  <!-- attribute "name" is the name of this schema and is only used for display purposes.
+       Applications should change this to reflect the nature of the search collection.
+       version="1.2" is Solr's version number for the schema syntax and semantics.  It should
+       not normally be changed by applications.
+       1.0: multiValued attribute did not exist, all fields are multiValued by nature
+       1.1: multiValued attribute introduced, false by default 
+       1.2: omitTermFreqAndPositions attribute introduced, true by default except for text fields.
+     -->
+
+    <types>
+        <!--
+            field type definitions. The "name" attribute is just a label to be used by field definitions. The "class"
+            attribute and any other attributes determine the real behavior of the fieldType. Class names starting with
+            "solr" refer to java classes in the org.apache.solr.analysis package.
+        -->
+
+        <!--
+            The StrField type is not analyzed, but indexed/stored verbatim. - StrField and TextField support an optional
+            compressThreshold which limits compression (if enabled in the derived fields) to values which exceed a
+            certain size (in characters).
+        -->
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true" />
+
+        <!-- boolean type: "true" or "false" -->
+        <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true" omitNorms="true" />
+
+        <!--
+            The optional sortMissingLast and sortMissingFirst attributes are currently supported on types that are
+            sorted internally as strings. - If sortMissingLast="true", then a sort on this field will cause documents
+            without the field to come after documents with the field, regardless of the requested sort order (asc or
+            desc). - If sortMissingFirst="true", then a sort on this field will cause documents without the field to
+            come before documents with the field, regardless of the requested sort order. - If sortMissingLast="false"
+            and sortMissingFirst="false" (the default), then default lucene sorting will be used which places docs
+            without the field first in an ascending sort and last in a descending sort.
+        -->
+
+        <!--
+          Default numeric field types. For faster range queries, consider the tint/tfloat/tlong/tdouble types.
+        -->
+        <fieldType name="int" class="solr.TrieIntField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
+        <fieldType name="float" class="solr.TrieFloatField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
+        <fieldType name="long" class="solr.TrieLongField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
+        <fieldType name="double" class="solr.TrieDoubleField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
+
+        <!--
+         Numeric field types that index each value at various levels of precision
+         to accelerate range queries when the number of values between the range
+         endpoints is large. See the javadoc for NumericRangeQuery for internal
+         implementation details.
+
+         Smaller precisionStep values (specified in bits) will lead to more tokens
+         indexed per value, slightly larger index size, and faster range queries.
+         A precisionStep of 0 disables indexing at different precision levels.
+        -->
+        <fieldType name="tint" class="solr.TrieIntField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+        <fieldType name="tfloat" class="solr.TrieFloatField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+        <fieldType name="tlong" class="solr.TrieLongField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+        <fieldType name="tdouble" class="solr.TrieDoubleField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+
+    <!-- The format for this date field is of the form 1995-12-31T23:59:59Z, and
+         is a more restricted form of the canonical representation of dateTime
+         http://www.w3.org/TR/xmlschema-2/#dateTime    
+         The trailing "Z" designates UTC time and is mandatory.
+         Optional fractional seconds are allowed: 1995-12-31T23:59:59.999Z
+         All other components are mandatory.
+
+         Expressions can also be used to denote calculations that should be
+         performed relative to "NOW" to determine the value, ie...
+
+               NOW/HOUR
+                  ... Round to the start of the current hour
+               NOW-1DAY
+                  ... Exactly 1 day prior to now
+               NOW/DAY+6MONTHS+3DAYS
+                  ... 6 months and 3 days in the future from the start of
+                      the current day
+                      
+         Consult the DateField javadocs for more information.
+
+         Note: For faster range queries, consider the tdate type
+          -->
+        <fieldType name="date" class="solr.TrieDateField" omitNorms="true" precisionStep="0" positionIncrementGap="0"/>
+
+        <!-- A Trie based date field for faster date range queries and date faceting. -->
+        <fieldType name="tdate" class="solr.TrieDateField" omitNorms="true" precisionStep="6" positionIncrementGap="0"/>
+
+        <!--
+          Note:
+          These should only be used for compatibility with existing indexes (created with older Solr versions)
+          or if "sortMissingFirst" or "sortMissingLast" functionality is needed. Use Trie based fields instead.
+
+          Plain numeric field types that store and index the text
+          value verbatim (and hence don't support range queries, since the
+          lexicographic ordering isn't equal to the numeric ordering)
+        -->
+        <!-- We do not currently use these, so comment them out
+        <fieldType name="pint" class="solr.IntField" omitNorms="true"/>
+        <fieldType name="plong" class="solr.LongField" omitNorms="true"/>
+        <fieldType name="pfloat" class="solr.FloatField" omitNorms="true"/>
+        <fieldType name="pdouble" class="solr.DoubleField" omitNorms="true"/>
+        
+        <fieldType name="pdate" class="solr.DateField" sortMissingLast="true" omitNorms="true"/>
+        -->
+
+        <!--
+          Note:
+          These should only be used for compatibility with existing indexes (created with older Solr versions)
+          or if "sortMissingFirst" or "sortMissingLast" functionality is needed. Use Trie based fields instead.
+
+          Numeric field types that manipulate the value into
+          a string value that isn't human-readable in its internal form,
+          but with a lexicographic ordering the same as the numeric ordering,
+          so that range queries work correctly.
+          NOTE: these are intended for range query use only, it is not necessary to use this type to do actual sorting.
+          In fact, it's wasteful to use these on fields where range queries are not necessary. The normal fields sort 
+          correctly.
+        -->
+        <!-- We do not currently use these, so comment them out
+        <fieldType name="sint" class="solr.SortableIntField" sortMissingLast="true" omitNorms="true"/>
+        <fieldType name="slong" class="solr.SortableLongField" sortMissingLast="true" omitNorms="true"/>
+        <fieldType name="sfloat" class="solr.SortableFloatField" sortMissingLast="true" omitNorms="true"/>
+        <fieldType name="sdouble" class="solr.SortableDoubleField" sortMissingLast="true" omitNorms="true"/>
+        -->
+
+
+        <!-- A text field that only splits on whitespace for exact matching of words -->
+        <fieldType name="text_ws" class="solr.TextField" positionIncrementGap="100">
+            <analyzer>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+            </analyzer>
+        </fieldType>
+
+        <!--
+            A text field that uses WordDelimiterFilter to enable splitting and matching of words on case-change, alpha
+            numeric boundaries, and non-alphanumeric chars, so that a query of "wifi" or "wi fi" could match a document
+            containing "Wi-Fi". Synonyms are customized by an external file, and stemming is enabled.
+            Duplicate tokens at the same position (which may result from Stemmed Synonyms or WordDelim parts) are
+            removed.
+        -->
+        <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
+            <analyzer type="index">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.PorterStemFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />            
+            </analyzer>
+            <analyzer type="query">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt"
+                        ignoreCase="true" expand="true"/>
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.PorterStemFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />                
+            </analyzer>
+        </fieldType>
+        
+         <!--
+            A text field that uses WordDelimiterFilter to enable splitting and matching of words on case-change, alpha
+            numeric boundaries, and non-alphanumeric chars, so that a query of "wifi" or "wi fi" could match a document
+            containing "Wi-Fi". Synonyms are customized by an external file, and stemming is enabled.
+            Duplicate tokens at the same position (which may result from Stemmed Synonyms or WordDelim parts) are
+            removed.
+            It also uses the PhoneticFilterFactory to apply phoneme (soundalike) matching. I think this should be used
+            only on smaller fields.
+        -->
+        <fieldType name="text_phonetic" class="solr.TextField" positionIncrementGap="100">
+            <analyzer type="index">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />
+                <filter class="solr.PhoneticFilterFactory" encoder="DoubleMetaphone" inject="false"/>            
+            </analyzer>
+            <analyzer type="query">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt"
+                        ignoreCase="true" expand="true"/>
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />
+                <filter class="solr.PhoneticFilterFactory" encoder="DoubleMetaphone" inject="false"/>        
+            </analyzer>
+        </fieldType>
+
+        <!--
+            A text field that uses WordDelimiterFilter to enable splitting and matching of words on case-change, alpha
+            numeric boundaries, and non-alphanumeric chars, so that a query of "wifi" or "wi fi" could match a document
+            containing "Wi-Fi". Synonyms are customized by an external file.
+            Duplicate tokens at the same position (which may result from Stemmed Synonyms or WordDelim parts) are
+            removed.
+            
+            Intended for use mainly by fields that hold Proper Names, e.g. where stemming would be counterintuitive.
+            The use of WordDelimiter is questionable, but it has some potential so currently it is used.
+        -->
+        <fieldType name="text_noStemming" class="solr.TextField" positionIncrementGap="100">
+            <analyzer type="index">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />            
+            </analyzer>
+            <analyzer type="query">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt"
+                        ignoreCase="true" expand="true"/>
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />                
+            </analyzer>
+        </fieldType>
+       
+       
+        <!--
+            A text field that uses WordDelimiterFilter to enable splitting and matching of words on case-change, alpha
+            numeric boundaries, and non-alphanumeric chars, so that a query of "wifi" or "wi fi" could match a document
+            containing "Wi-Fi". Synonyms are customized by an external file, and stemming is enabled.
+            Duplicate tokens at the same position (which may result from Stemmed Synonyms or WordDelim parts) are
+            removed.
+            
+            This also removes stop words.
+        -->
+        <fieldType name="text_noStopwords" class="solr.TextField" positionIncrementGap="100">
+            <analyzer type="index">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.PorterStemFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />            
+            </analyzer>
+            <analyzer type="query">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt"
+                        ignoreCase="true" expand="true"/>
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.PorterStemFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />                
+            </analyzer>
+        </fieldType>
+        
+        <!--
+            A text field that uses WordDelimiterFilter to enable splitting and matching of words on case-change, alpha
+            numeric boundaries, and non-alphanumeric chars, so that a query of "wifi" or "wi fi" could match a document
+            containing "Wi-Fi". Synonyms are customized by an external file.
+            Duplicate tokens at the same position (which may result from Stemmed Synonyms or WordDelim parts) are
+            removed.
+            
+            Intended for use mainly by fields that hold Proper Names, e.g. where stemming would be counterintuitive.
+            The use of WordDelimiter is questionable, but it has some potential so currently it is used.
+            
+            This also removes stop words.
+        -->
+        <fieldType name="text_noStopwords_noStemming" class="solr.TextField" positionIncrementGap="100">
+            <analyzer type="index">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />            
+            </analyzer>
+            <analyzer type="query">
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt"
+                        ignoreCase="true" expand="true"/>
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />                
+            </analyzer>
+        </fieldType>
+
+        <!--
+            Less flexible matching, but less false matches. Probably not ideal for product names, but may be good for
+            SKUs. Can insert dashes in the wrong place and still match.
+        -->
+        <fieldType name="textTight" class="solr.TextField" positionIncrementGap="100">
+            <analyzer>
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="false" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="0" generateNumberParts="0"
+                    catenateWords="1" catenateNumbers="1" catenateAll="0" />
+                <filter class="solr.LowerCaseFilterFactory" />
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory" />
+            </analyzer>
+        </fieldType>
+
+        <!--
+            This is an example of using the KeywordTokenizer along With various TokenFilterFactories to produce a
+            sortable field that does not include some properties of the source text
+        -->
+        <fieldType name="alphaNumericSort" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+            <analyzer>
+                <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ISOLatin1Accent.txt"/>
+                <!--
+                    KeywordTokenizer does no actual tokenizing, so the entire input string is preserved as a single
+                    token
+                -->
+                <tokenizer class="solr.KeywordTokenizerFactory" />
+                <!--
+                    The LowerCase TokenFilter does what you expect, which can be when you want your sorting to be case
+                    insensitive
+                -->
+                <filter class="solr.LowerCaseFilterFactory" />
+                <!-- The TrimFilter removes any leading or trailing whitespace -->
+                <filter class="solr.TrimFilterFactory" />
+                <!--
+                    The PatternReplaceFilter gives you the flexibility to use Java Regular expression to replace any
+                    sequence of characters matching a pattern with an arbitrary replacement string, which may include
+                    back refrences to portions of the orriginal string matched by the pattern. See the Java Regular
+                    Expression documentation for more infomation on pattern and replacement string syntax.
+
+                    http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/package-summary.html
+                -->
+                <filter class="solr.PatternReplaceFilterFactory" pattern="([^0-9a-z ])" replacement="" replace="all" />
+            </analyzer>
+        </fieldType>
+
+        <!-- for spell checking individual words-->
+        <fieldType name="spell" class="solr.TextField" positionIncrementGap="100">
+            <analyzer type="index">
+                <tokenizer class="solr.StandardTokenizerFactory"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+                <filter class="solr.StandardFilterFactory"/>
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.StandardTokenizerFactory"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.StandardFilterFactory"/>
+                <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+            </analyzer>
+        </fieldType>
+
+        <!-- for spell checking phrases, be careful to only use this on short fields -->
+        <fieldType name="spell_phrase" class="solr.TextField" positionIncrementGap="100" stored="false" multiValued="true">
+            <analyzer>
+                <tokenizer class="solr.KeywordTokenizerFactory"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+            </analyzer>
+         </fieldType>
+         
+        <fieldType name="text_highlight" class="solr.TextField" positionIncrementGap="100">
+            <analyzer>
+                <tokenizer class="solr.WhitespaceTokenizerFactory" />
+                <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1"
+                    catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" />
+                <filter class="solr.LowerCaseFilterFactory" />
+            </analyzer>
+        </fieldType>
+
+        <!--
+            since fields of this type are by default not stored or indexed, any data added to them will be ignored
+            outright
+        -->
+        <fieldtype name="ignored" stored="false" indexed="false" class="solr.StrField" />
+    </types>
+
+
+    <fields>
+        <!--
+            Valid attributes for fields: 
+            name: mandatory - the name for the field 
+            type: mandatory - the name of a previously defined type from the <types> section
+            indexed: true if this field should be indexed (searchable
+            or sortable) 
+            stored: true if this field should be retrievable 
+            compressed: [false] if this field should be stored using gzip compression 
+            (this will only apply if the field type is compressable; among the standard
+            field types, only TextField and StrField are) 
+            multiValued: true if this field may contain multiple values per document 
+            omitNorms: (expert) set to true to omit the norms associated with this field (this disables
+            length normalization and index-time boosting for the field, and saves some memory). Only full-text fields or
+            fields that need an index-time boost need norms. 
+            termVectors: [false] set to true to store the term vector for a given field. When using MoreLikeThis, 
+            fields used for similarity should be stored for best performance.
+            termPositions: Store position information with the term vector.  
+            This will increase storage costs.
+            termOffsets: Store offset information with the term vector. This 
+            will increase storage costs.
+            default: a value that should be used if no value is specified
+            when adding a document.
+        -->
+
+        <!--
+            From the solr wiki:
+            Sorting can be done on the "score" of the document, or on any multiValued="false" indexed="true" field 
+            provided that field is either non-tokenized (ie: has no Analyzer) or uses an Analyzer that only produces a
+            single Term (ie: uses the KeywordTokenizer) 
+
+            The common situation for sorting on a field that you do want to be tokenized for searching is to use a 
+            <copyField> to clone your field. Sort on one, search on the other. 
+        -->
+        
+        <!--
+            Phonetic and Sort fields 
+            stored="false" because there is no need to display them
+            required="false" because we do not need them to be specified when docs are added/updated, use copyField
+        -->
+            
+        <!-- string because we're storing ids like '123' and 'r123' -->
+        <field name="id" type="string" indexed="true" stored="true" required="true" />
+        
+        <!-- booleans to allow for easy inclusion/exclusion and advanced sorting needs, e.g. 'remotes' last -->
+        <field name="pending" type="boolean" indexed="true" stored="false" required="true" />
+        <field name="remote" type="boolean" indexed="true" stored="false" required="true" />
+        
+        <!-- not unique! -->
+        <field name="title_id" type="int" indexed="true" stored="true" required="true" />
+        
+        <!-- title fields -->
+        <field name="title" type="text" indexed="true" stored="true" required="false" />
+        <field name="title_no_stem" type="text_noStemming" indexed="true" stored="true" required="false" />
+        <field name="title_phonetic" type="text_phonetic" indexed="true" stored="false" required="false" />
+        <!-- title_sort does not use copyField so that the request is obliged to do any necessary preprocessing on a 
+             language specific basis, e.g. removing The from the start of the string for English language books -->
+        <field name="title_sort" type="alphaNumericSort" indexed="true" stored="false" required="false" />
+        <copyField source="title" dest="title_no_stem" />
+        <copyField source="title" dest="title_phonetic" />
+        
+        <!-- search on the first two, highlight against the third -->
+        <field name="content" type="text_noStopwords" indexed="true" stored="false" required="false" omitNorms="true" />
+        <field name="content_no_stem" type="text_noStopwords_noStemming" indexed="true" stored="false" required="false" omitNorms="true" />
+        <copyField source="content" dest="content_no_stem" />
+        <!-- index=true so that we can use termVectors=true and termPositions=true which are supposed to boost highlighting performance -->
+        <field name="content_highlight" type="text_highlight" indexed="true" stored="true" required="false" termVectors="true" termPositions="true" termOffsets="true" />
+        <!-- we only copy the first x chars because the highlighter only considers the first x chars -->
+        <copyField source="content" dest="content_highlight" maxChars="51200" />
+        
+        <!-- textTight because above definition hints that it seems to be appropriate here -->
+        <field name="isbn" type="textTight" indexed="true" stored="true" required="false" />
+        
+        <!-- authors -->
+        <field name="author" type="text_noStemming" indexed="true" stored="true" required="false" multiValued="true" />
+        <field name="author_phonetic" type="text_phonetic" indexed="true" stored="false" required="false" multiValued="true" />
+        <!-- for faceting and exact lookups -->
+        <field name="author_exact_first_last" type="string" indexed="true" stored="false" required="false" multiValued="true" />
+        <field name="author_exact_last_first" type="string" indexed="true" stored="false" required="false" multiValued="true" />
+        <!-- sort fields cannot be multivalued -->
+        <field name="author_sort" type="alphaNumericSort" indexed="true" stored="false" required="false" />
+        <copyField source="author" dest="author_phonetic" />
+        <copyField source="author" dest="author_exact_first_last" />
+        <!-- Cannot use copyField on author -> author_sort because of the differing multivalued attribute -->
+        
+        <field name="publisher" type="text_noStemming" indexed="true" stored="true" required="false" />
+        <field name="publisher_exact" type="string" indexed="true" stored="false" required="false" />
+        <field name="publisher_sort" type="alphaNumericSort" indexed="true" stored="false" required="false" />
+        <copyField source="publisher" dest="publisher_exact" />
+        <copyField source="publisher" dest="publisher_sort" /> 
+        
+        <field name="grade" type="int" indexed="true" stored="true" multiValued="true" required="false"/>
+        <field name="grade_sort_min" type="int" indexed="true" stored="false" multiValued="false" required="false"/>
+        <field name="grade_sort_max" type="int" indexed="true" stored="false" multiValued="false" required="false"/>
+        
+        <!-- filtering/faceting only, not searches, string so that no tokenizing happens -->
+        <field name="category" type="string" indexed="true" stored="true" required="false" multiValued="true" />
+        <field name="category_bisac" type="string" indexed="true" stored="true" required="false" multiValued="true" />
+        
+        <!-- tint for range searches -->
+        <field name="quality" type="tint" indexed="true" stored="true" required="true" />
+        
+        <field name="language" type="int" indexed="true" stored="true" required="false" multiValued="true" />
+        <field name="region" type="int" indexed="true" stored="true" required="true" multiValued="true"/>
+        <field name="state" type="int" indexed="true" stored="true" required="true" />
+        
+        <!-- The UI may never display these values directly, but they're stored/retrieved to do lookups for what content is available to users -->
+        <field name="adult" type="boolean" indexed="true" stored="true" required="false" />
+        <field name="demo" type="boolean" indexed="true" stored="true" required="false" />
+        <!-- Note that 'freely available' is a general term that covers both creative commons and public domain works. -->
+        <field name="freely_available" type="boolean" indexed="true" stored="true" required="false" />
+        <field name="usage_restriction" type="int" indexed="true" stored="true" required="false" multiValued="true" />
+        <field name="b4e_significant" type="boolean" indexed="true" stored="true" required="false" />
+        <field name="nimac" type="boolean" indexed="true" stored="true" required="false" />
+        <field name="user_availability" type="int" indexed="true" stored="true" required="false" multiValued="true" />
+        
+        <field name="brief_synopsis" type="text" indexed="true" stored="true" required="false" />
+        <field name="brief_synopsis_no_stem" type="text_noStemming" indexed="true" stored="false" required="false" />
+        <copyField source="brief_synopsis" dest="brief_synopsis_no_stem" />
+        
+        <field name="long_synopsis" type="text" indexed="true" stored="true" required="false" />
+        <field name="long_synopsis_no_stem" type="text_noStemming" indexed="true" stored="false" required="false" />
+        <copyField source="long_synopsis" dest="long_synopsis_no_stem" />
+        
+        <field name="copyright_date" type="date" indexed="true" stored="true" required="false" />
+        <field name="copyright_name" type="string" indexed="true" stored="true" required="false" />
+        <!-- tdate for range searches -->
+        <field name="publish_date" type="tdate" indexed="true" stored="true" required="false" />
+        
+        <!-- these reference user_account_id -->
+        <field name="submitter" type="int" indexed="true" stored="true" required="false" />
+        <field name="proofreader" type="int" indexed="true" stored="true" required="false" />
+        
+        <!-- used for sorting and possibly filtering, never retrieved -->
+        <field name="download_count" type="tint" indexed="true" stored="false" required="false" /> 
+        
+        <!-- don't yet see a point in indexing this, it's to support display -->
+        <field name="format" type="int" indexed="false" stored="true" multiValued="true" required="false" />
+
+		<!-- Used for queue search. -->        
+        <field name="submit_date" type="tdate" indexed="true" stored="true" required="false" />
+        <field name="checkin_date" type="tdate" indexed="true" stored="true" required="false" />
+        <field name="checkout_date" type="tdate" indexed="true" stored="true" required="false" />
+        <field name="withdrawal_date" type="tdate" indexed="true" stored="true" required="false" />
+        <field name="conversion_date" type="tdate" indexed="true" stored="true" required="false" />
+        <field name="title_source_description" type="string" indexed="true" stored="true" required="false" />
+        <field name="quality_score" type="tint" indexed="true" stored="true" required="false" />
+        <field name="pending_reason" type="int" indexed="true" stored="true" required="false" multiValued="true" />
+        
+        <!-- DTBook size is for use in web service, so device makers can determine if their device can handle the book -->
+        <field name="dtbook_size" type="long" indexed="true" stored="true" required="false" />
+
+        <field name="num_images" type="tint" indexed="true" stored="true" required="false" />
+        <field name="num_images_described" type="tint" indexed="true" stored="true" required="false" />
+        
+        <!-- spell checking is done on this field, against indexed terms, no need to store anything -->
+        <field name="keyword_spell" type="spell_phrase" indexed="true" stored="false" multiValued="true" required="false" />
+        <copyField source="title" dest="keyword_spell" />
+        <copyField source="author" dest="keyword_spell" />
+        <copyField source="isbn" dest="keyword_spell" />
+
+        <!-- for audit/debugging purposes, note the default -->
+        <field name="index_date" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
+    </fields>
+
+    <!--
+        Field to use to determine and enforce document uniqueness. Unless this field is marked with required="false", it
+        will be a required field
+    -->
+    <uniqueKey>id</uniqueKey>
+
+    <!-- field for the QueryParser to use when an explicit fieldname is absent
+-->
+    <defaultSearchField>content</defaultSearchField>
+
+    <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
+    <solrQueryParser defaultOperator="AND" />
+
+      <!-- Similarity is the scoring routine for each document vs. a query.
+           A custom Similarity or SimilarityFactory may be specified here, but 
+           the default is fine for most applications.  
+           For more info: http://wiki.apache.org/solr/SchemaXml#Similarity
+        -->
+      <!--
+         <similarity class="com.example.solr.CustomSimilarityFactory">
+           <str name="paramkey">param value</str>
+         </similarity>
+        -->
+    
+    </schema>
