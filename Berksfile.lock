@@ -1,0 +1,9 @@
+DEPENDENCIES
+  solr
+    path: .
+    metadata: true
+
+GRAPH
+  java (1.28.0)
+  solr (0.1.14)
+    java (~> 1.28.0)
