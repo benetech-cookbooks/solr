@@ -1322,14 +1322,14 @@
          <str name="replicateAfter">commit</str>
          <str name="replicateAfter">startup</str>
          <str name="confFiles">mapping-ISOLatin1Accent.txt,schema.xml,stopwords.txt</str>
-         <str name="backupAfter">optimize</str>
+         <str name="backupAfter">${backups.after:optimize}</str>
        </lst>
        <lst name="slave">
          <str name="enable">${enable.slave:false}</str>
          <str name="masterUrl">${solr.repl.master.url:http://solr1.dev.bookshare.org:8080/core0/replication}</str>
          <str name="pollInterval">${solr.repl.interval:00:00:60}</str>
        </lst>
-       <int name="maxNumberOfBackups">1</int>
+       <int name="maxNumberOfBackups">${backups.maxNumber:1}</int>
   </requestHandler>
 
   <!-- Search Components
