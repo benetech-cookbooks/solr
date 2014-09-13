@@ -1,9 +1,14 @@
 DEPENDENCIES
+  bookshare
+    path: ../bookshare
   solr
     path: .
     metadata: true
 
 GRAPH
+  aws (2.4.0)
+  bookshare (0.1.114)
+    aws (~> 2.4.0)
   java (1.28.0)
-  solr (0.1.14)
+  solr (0.1.15)
     java (~> 1.28.0)
