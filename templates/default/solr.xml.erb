@@ -2,10 +2,10 @@
 <solr sharedLib="lib" persistent="true">
   <cores adminPath="/admin/cores">
     <core name="core0" instanceDir="core0/">
-      <property name="enable.master" value="false" />
-      <property name="enable.slave" value="true" />
-      <property name="solr.repl.master.url" value="http://solr1.bookshare.org:8080/core0/replication" />
-      <property name="solr.repl.interval" value="00:00:00" />
+      <property name="enable.master" value="<%= node['solr']['enable_master'] %>" />
+      <property name="enable.slave" value="<%= node['solr']['enable_slave'] %>" />
+      <property name="solr.repl.master.url" value="<%= node['solr']['repl']['master_url'] %>" />
+      <property name="solr.repl.interval" value="<%= node['solr']['repl']['interval'] %>" />
       <property name="backups.after" value="" />
       <property name="backups.maxNUMBER" value="0" />
     </core>

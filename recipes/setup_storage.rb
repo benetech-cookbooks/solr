@@ -13,7 +13,7 @@ bookshare_ebs_btrfs "/var/lib/solr-home" do
   number_of_volumes 2
   size_of_volumes 300
   raid_type "raid0"
-  volume_label "postgres"
+  volume_label "solr"
   mount_point_owner "solr"
   mount_point_group "root"
   mount_point_perms 00755

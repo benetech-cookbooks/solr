@@ -115,16 +115,19 @@ directory "/var/lib/solr-home/core1/data" do
 end
 
 #
-# install Solr config files for core0
+# install solr.xml
 #
 
-cookbook_file "solr.xml" do
-  path "/var/lib/solr-home/solr.xml"
-  action :create
+template "/var/lib/solr-home/solr.xml" do
+  source "solr.xml.erb"
+  mode 0640
   owner "solr"
   group "root"
-  mode "0640"
 end
+
+#
+# install Solr config files for core0
+#
 
 cookbook_file "elevate.xml" do
   path "/var/lib/solr-home/core0/conf/elevate.xml"
@@ -193,14 +196,6 @@ end
 #
 # install Solr config files for core1
 #
-
-cookbook_file "solr.xml" do
-  path "/var/lib/solr-home/solr.xml"
-  action :create
-  owner "solr"
-  group "root"
-  mode "0640"
-end
 
 cookbook_file "elevate.xml" do
   path "/var/lib/solr-home/core1/conf/elevate.xml"
