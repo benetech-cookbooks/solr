@@ -18,4 +18,5 @@ bookshare_ebs_btrfs "/var/lib/solr-home" do
   mount_point_group "root"
   mount_point_perms 00755
   mv_mnt_mv_rm false
+  start_stop_service ""
 end

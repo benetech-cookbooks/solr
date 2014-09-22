@@ -1,9 +1,16 @@
+instance_name =
+if node['tomcat']['instances']['solr2']
+  instance_name = "solr2"
+else
+  instance_name = "solr1"
+end
+
 #
 # install the WAR
 #
 
 cookbook_file "solr-4.6.0.war" do
-  path "/var/lib/tomcat6-solr1/webapps/ROOT.war"
+  path "/var/lib/tomcat6-#{instance_name}/webapps/ROOT.war"
   action :create
   owner "root"
   group "root"
@@ -15,7 +22,7 @@ end
 #
 
 cookbook_file "jcl-over-slf4j-1.6.6.jar" do
-  path "/var/lib/tomcat6-solr1/lib/jcl-over-slf4j-1.6.6.jar"
+  path "/var/lib/tomcat6-#{instance_name}/lib/jcl-over-slf4j-1.6.6.jar"
   action :create
   owner "root"
   group "root"
@@ -23,7 +30,7 @@ cookbook_file "jcl-over-slf4j-1.6.6.jar" do
 end
 
 cookbook_file "jul-to-slf4j-1.6.6.jar" do
-  path "/var/lib/tomcat6-solr1/lib/jul-to-slf4j-1.6.6.jar"
+  path "/var/lib/tomcat6-#{instance_name}/lib/jul-to-slf4j-1.6.6.jar"
   action :create
   owner "root"
   group "root"
@@ -31,7 +38,7 @@ cookbook_file "jul-to-slf4j-1.6.6.jar" do
 end
 
 cookbook_file "log4j-1.2.16.jar" do
-  path "/var/lib/tomcat6-solr1/lib/log4j-1.2.16.jar"
+  path "/var/lib/tomcat6-#{instance_name}/lib/log4j-1.2.16.jar"
   action :create
   owner "root"
   group "root"
@@ -39,7 +46,7 @@ cookbook_file "log4j-1.2.16.jar" do
 end
 
 cookbook_file "log4j.properties" do
-  path "/var/lib/tomcat6-solr1/lib/log4j.properties"
+  path "/var/lib/tomcat6-#{instance_name}/lib/log4j.properties"
   action :create
   owner "root"
   group "root"
@@ -47,7 +54,7 @@ cookbook_file "log4j.properties" do
 end
 
 cookbook_file "slf4j-api-1.6.6.jar" do
-  path "/var/lib/tomcat6-solr1/lib/slf4j-api-1.6.6.jar"
+  path "/var/lib/tomcat6-#{instance_name}/lib/slf4j-api-1.6.6.jar"
   action :create
   owner "root"
   group "root"
@@ -55,7 +62,7 @@ cookbook_file "slf4j-api-1.6.6.jar" do
 end
 
 cookbook_file "slf4j-log4j12-1.6.6.jar" do
-  path "/var/lib/tomcat6-solr1/lib/slf4j-log4j12-1.6.6.jar"
+  path "/var/lib/tomcat6-#{instance_name}/lib/slf4j-log4j12-1.6.6.jar"
   action :create
   owner "root"
   group "root"

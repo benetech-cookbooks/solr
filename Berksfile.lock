@@ -12,6 +12,6 @@ GRAPH
     cron (~> 1.5.0)
   cron (1.5.0)
   java (1.28.0)
-  solr (0.1.19)
+  solr (0.1.20)
     cron (~> 1.5.0)
     java (~> 1.28.0)
