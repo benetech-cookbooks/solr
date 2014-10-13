@@ -4,7 +4,6 @@ maintainer_email 'rone@benetech.org'
 license          'All rights reserved'
 description      'Installs/Configures Apache Solr'
 long_description 'Installs/Configures Apache Solr'
-version          '0.1.20'
+version          '0.1.21'
 
 depends 'java', '~> 1.28.0'
-depends 'cron', '~> 1.5.0'
