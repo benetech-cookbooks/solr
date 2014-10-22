@@ -1,7 +1,7 @@
 cron_d 'replicate-live-solr-index' do
   minute  0
   hour    0
-  day     6
+  weekday 6
   command "curl -s http://localhost:8080/core0/replication?command=fetchindex"
   user    'root'
   mailto  'sysadmin@bookshare.org'

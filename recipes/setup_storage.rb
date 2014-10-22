@@ -3,9 +3,6 @@ include_recipe "aws"
 # access our aws credentials
 aws = data_bag_item("aws", "main")
 
-# access our aws credentials
-aws = data_bag_item("aws", "main")
-
 bookshare_ebs_btrfs "/var/lib/solr-home" do
   aws_access_key aws['aws_access_key_id']
   aws_secret_access_key aws['aws_secret_access_key']
