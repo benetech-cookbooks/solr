@@ -7,8 +7,8 @@ DEPENDENCIES
 
 GRAPH
   aws (2.4.0)
-  bookshare (0.2.57)
+  bookshare (0.2.58)
     aws (~> 2.4.0)
   java (1.28.0)
-  solr (0.1.23)
+  solr (0.1.24)
     java (~> 1.28.0)
