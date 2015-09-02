@@ -477,6 +477,7 @@
         
         <!-- textTight because above definition hints that it seems to be appropriate here -->
         <field name="isbn" type="textTight" indexed="true" stored="true" required="false" />
+        <field name="isbn_related" type="textTight" indexed="true" stored="true" required="false" multiValued="true" />
         
         <!-- authors -->
         <field name="author" type="text_noStemming" indexed="true" stored="true" required="false" multiValued="true" />
@@ -559,6 +560,7 @@
 
         <field name="num_images" type="tint" indexed="true" stored="true" required="false" />
         <field name="num_images_described" type="tint" indexed="true" stored="true" required="false" />
+        <field name="embedded_image_descriptions" type="boolean" indexed="true" stored="true" required="false" />
         
         <!-- spell checking is done on this field, against indexed terms, no need to store anything -->
         <field name="keyword_spell" type="spell_phrase" indexed="true" stored="false" multiValued="true" required="false" />

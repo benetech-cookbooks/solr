@@ -6,4 +6,5 @@ cron_d 'replicate-live-solr-index' do
   user    'root'
   mailto  'sysadmin@bookshare.org'
   path    '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bookshare/sbin:/usr/local/bookshare/bin:/usr/local/bin'
+  action :delete
 end
