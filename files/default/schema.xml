@@ -544,6 +544,8 @@
         
         <!-- don't yet see a point in indexing this, it's to support display -->
         <field name="format" type="int" indexed="false" stored="true" multiValued="true" required="false" />
+        <!-- Used when we want to know what the original file was -->
+        <field name="source_format" type="int" indexed="false" stored="true" multiValued="false" required="false" />
 
 		<!-- Used for queue search. -->        
         <field name="submit_date" type="tdate" indexed="true" stored="true" required="false" />
@@ -552,6 +554,7 @@
         <field name="withdrawal_date" type="tdate" indexed="true" stored="true" required="false" />
         <field name="conversion_date" type="tdate" indexed="true" stored="true" required="false" />
         <field name="title_source_description" type="string" indexed="true" stored="true" required="false" />
+        <!-- deprecated: remove quality_score the next time we are willing to make non-backwards compatible changes -->
         <field name="quality_score" type="tint" indexed="true" stored="true" required="false" />
         <field name="pending_reason" type="int" indexed="true" stored="true" required="false" multiValued="true" />
         
